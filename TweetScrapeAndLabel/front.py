@@ -88,7 +88,7 @@ class MainPage(tk.Tk):
 
         def create_dataframe():
             label_df.to_csv(output_dir_but["text"] + "/" + output_name.get() + 
-                            ".csv",encoding='utf-8', index=False)
+                            ".csv", index=False)
 
         def positive(self):
             global row
