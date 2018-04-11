@@ -11,6 +11,7 @@ from nltk.corpus import stopwords
 import re
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Activation
+from keras.optimizers import SGD
 
 df = pd.read_csv("5001labelled.csv")
 label = df[['useful', 'text']]
@@ -81,7 +82,7 @@ model.add(Dropout(0.5))
 model.add(Dense(2, activation='softmax'))
 
 model.compile(loss='categorical_crossentropy',
-  optimizer='adam',
+  optimizer=SGD(lr=0.01, momentum=0.9, nesterov=True),
   metrics=['accuracy'])
 
 model.fit(train_x, train_y,
