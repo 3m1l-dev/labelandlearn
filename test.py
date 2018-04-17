@@ -45,9 +45,9 @@ while 1:
 
     # format your input for the neural net
     testArr = convert_text_to_index_array(evalSentence)
-    input = tokenizer.sequences_to_matrix([testArr], mode='binary')
+    raw_input = tokenizer.sequences_to_matrix([testArr], mode='binary')
     # predict which bucket your input belongs in
-    pred = model.predict(input)
+    pred = model.predict(raw_input)
     # and print it for the humons
     print("%s sentiment; %f%% confidence" % (labels[np.argmax(pred)], pred[0][np.argmax(pred)] * 100))# -*- coding: utf-8 -*-
 

@@ -6,20 +6,21 @@ The TweetScrapeAndLabel part uses the following repository:
 
 The file in TweetScrapeAndLabel that I made for the labeller is front.py, and also made some changes to
 the user agent in TweetManager as user agents may get blocked depending on how many tweets you pull.
-For the labeller part I used Python 2.7, with Tkinter, pandas and numpy mostly.
+For the labeller part I used Python 2.7, with Tkinter, pandas and numpy mostly. This basic Tkinter app I made
+to speed up the labelling process for myself initially so that I could build the first classifier. However, 
+I dislike Tkinter and decided to move on to Flask. 
 
-Although I don't have enough data yet I made a quick preprocessing and classifier testing file just to showcase
-the direction in which this project is going. This is the preprocessing.py file, where I used Python 3.6, nltk, pandas,
-numpy, sklearn and some others. Here I've tokenised the words, done some preprocessing, and trained a few classifiers using
-the top 10,000 most common words that appear in positive and negative tweets. Even with this basic setup I'm getting around 85% 
-accuracy.
+I've tokenised the words, done some preprocessing, and trained a basic classifier using the the top 10,000 most common words that appear in positive and negative tweets.
+With this setup I'm getting around 96% accuracy for detecting useless tweets, and around 36% for detecting useful tweets.
 
-The next stages (after I collect and label at least 20k tweets manually) involve building a neural net for the classification,
-doing some tuning and aiming for a very high accuracy so that I can start pulling tweets and labelling them at the same time. I aim to combine
-the classifier and labeller, but I will probably have to write my own version of the tweet puller part in Python 3.6.
+I've made the Flask front-end very simple, with plans to expand it in the future. However for now it serves as an easy way to label, see the predictions of the
+current classifier, and re-train when desired to udpate the predictions and see as the classifier improves over time. Currently I am only training one classifier
+for detecting useful / useless tweets, however as you can see from the labels I am categorising tweets with their sentiment, as the next step after training a 
+useful tweet classifier would be to scrape as many tweets as possible and train an Ethereum sentiment analysis classifier. This would be highly useful to study
+the price of Ethereum and investigate the connection with the overall twitter sentiments of Ethereum that day and the price. A sentiment analysis could be fed in
+as an indicator to a recurrent neural net to predict the price eventually.
 
-The reason the project has been taking long to develop is mostly due to the fact that I have to label the data myself and I'm only working on this project
-in my own time outside of work. Still the main aim would be to train a very accurate meaningful tweet fetcher for cryptos, as this data could be used for 
-predicting fluctuations in stock price. This could be done through linking the labeller to the Twitter API and using positive / negative analysis on live tweets about a crypto currency
-as an indicator to a RNN to predict crypto prices.....
+There is great potential for this project however it has been taking long to develop as I have to label the data myself and I'm only working on this project
+in my own time outside of work. However this inspired me to make a useful and efficient labelling and re-training front-end, and I am focusing on that first to 
+make the rest of the project easier in the future. 
 
