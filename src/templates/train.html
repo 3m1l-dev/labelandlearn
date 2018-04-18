@@ -1,0 +1,31 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+<div class="jumbotron text-center text-justify">
+    <img src="https://cdn-images-1.medium.com/max/768/1*u90cJ3k-ZXvLlgWg1apBEg.png" width="15%" height="15%" alt="Smiley face" align="center">
+    <h1>{{ text }}</h1>
+    <p class="lead">{{ date }}</p>
+</div>
+
+<div class="jumbotron text-center">
+    <h1>Prediction {{ prediction }}</h1>
+    <form id="positive" action="{{ url_for('positive') }}" method="POST">
+        <input class="btn btn-lg btn-outline-success my-2 my-sm-0" type="submit" value="Positive">
+
+    <form id="useless" action="{{ url_for('useless') }}" method="POST">
+        <input class="btn btn-lg btn-outline-warning my-2 my-sm-0" type="submit" value="Useless">
+    <form id="negative" action="{{ url_for('negative') }}" method="POST">
+        <input class="btn btn-lg btn-outline-danger my-2 my-sm-0" type="submit" value="Negative">
+    </form>
+
+</div>
+
+<div>
+    <form id="retrain" action="{{ url_for('retrain') }}" method="POST">
+        <input class="btn btn-lg btn-outline-success my-2 my-sm-0" type="submit" value="Retrain">
+    </form>
+</div>
+
+
+{% endblock %}
+

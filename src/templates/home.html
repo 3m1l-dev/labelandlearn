@@ -1,0 +1,22 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+
+<div style="background:transparent !important" class="jumbotron text-center ">
+	<img src="https://cdn-images-1.medium.com/max/768/1*u90cJ3k-ZXvLlgWg1apBEg.png" width="50%" height="50%" alt="Smiley face" align="middle">
+	<h1>Label and Learn: Ethereum</h1>
+</div>
+
+<div class="text-center">
+	<p class="lead">Load unlabelled dataset:</p>
+	<form id="upload-form" action="{{ url_for('train') }}" method="POST" enctype="multipart/form-data">
+		<input class="btn btn-outline-success my-2 my-sm-0" type="file" name="file" accept=".csv">
+		<input class="btn btn-lg btn-outline-success my-2 my-sm-0" type="submit" value="Start">
+</div>
+
+
+
+
+
+{% endblock %}
+
