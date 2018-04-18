@@ -4,16 +4,18 @@ import re
 from nltk.corpus import stopwords
 import pandas as pd
 import numpy as np
-
+import nltk
 from keras.preprocessing.text import Tokenizer
 from keras.models import model_from_json
 
+nltk.download('stopwords')
 app = Flask(__name__)
 
 APP_ROOT = os.path.dirname(os.path.abspath(__file__))
 
 # Pre-processing function, with STOPWORDS imported from nltk
 STOPWORDS = set(stopwords.words('english'))
+
 
 def format_text(s):
 	s = re.sub(r"http\S+", "", s)
