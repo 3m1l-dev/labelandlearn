@@ -19,5 +19,7 @@ make the rest of the project easier in the future. While doing this I realised t
 be used in larger projects to spread data labelling work to anyone, as the front-end is very easy to use and requires no actual knowledge of coding.
 
 I will potentially build this into a larger more generalised labelling and learning tool, and might want to incorporate online learning with stochastic gradient descent,
-treating each tweet as a mini-batch and updating the weights live. 
+treating each tweet as a mini-batch and updating the weights live.
+
+To run the web app, run the app.py as a python script, and open http://127.0.0.1:5000/ in your preferred web browser. 
 
