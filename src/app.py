@@ -1,5 +1,4 @@
 import os
-import subprocess as sub
 from flask import Flask, render_template, request
 import re
 from nltk.corpus import stopwords
@@ -51,7 +50,8 @@ row = 0
 max_words = 10000
 
 # The latest set of labelled data that the network is trained on is loaded from the main project folder
-data = pd.read_csv('latest.csv')
+data_sets = os.path.join(APP_ROOT, 'data_sets/')
+data = pd.read_csv(data_sets + 'latest.csv')
 latest = data[['useful', 'text']]
 
 # Model structure created in neuralnetmodel.ipynb is laoded
@@ -68,7 +68,7 @@ model._make_predict_function()
 tknzr = Tokenizer(lower=True, split=" ", num_words=max_words)
 
 
-@app.route('/')
+@app.route('/', methods=['POST', 'GET'])
 def home():
 	return render_template('home.html')
 
@@ -124,52 +124,53 @@ def train():
 # Both positive and negative tweets are useful, the reason they are differentiated at this point is to be used for
 # sentiment analysis later on when I have finished collecting and labelling enough data.
 
-@app.route('/positive', methods=['POST'])
-def positive():
+@app.route('/label', methods=['POST'])
+def label():
 	global row
-	original.at[row, 'rating'] = 1
-	original.at[row, 'useful'] = 1
-	print(original.iloc[row])
-	row += 1
-	return render_template('train.html', text=original.iloc[row]['text'], date=original.iloc[row]['date'], prediction=predicted[row])
+	# Updating the dataframe with ratings and values depending on value of submit button
+	if request.method == 'POST':
+		if request.form['submit'] == 'Positive':
+			original.at[row, 'rating'] = 1
+			original.at[row, 'useful'] = 1
+			print(original.iloc[row])
+			row += 1
+		if request.form['submit'] == 'Negative':
+			original.at[row, 'rating'] = -1
+			original.at[row, 'useful'] = 1
+			print(original.iloc[row])
+			row += 1
+		if request.form['submit'] == 'Useless':
+			original.at[row, 'rating'] = 0
+			original.at[row, 'useful'] = 0
+			print(original.iloc[row])
+			row += 1
+	# Returns next tweet with prediction
+	return render_template('train.html', text=original.iloc[row]['text'], date=original.iloc[row]['date'],
+						   prediction=predicted[row])
 
-@app.route('/negative', methods=['POST'])
-def negative():
-	global row
-	original.at[row, 'rating'] = 1
-	original.at[row, 'useful'] = 1
-	print(original.iloc[row])
-	row += 1
-	return render_template('train.html', text=original.iloc[row]['text'], date=original.iloc[row]['date'], prediction=predicted[row])
-
-@app.route('/useless', methods=['POST'])
-def useless():
-	global row
-	original.at[row, 'rating'] = 1
-	original.at[row, 'useful'] = 1
-	print(original.iloc[row])
-	row += 1
-	return render_template('train.html', text=original.iloc[row]['text'], date=original.iloc[row]['date'], prediction=predicted[row])
 
 @app.route('/re-train', methods=['POST'])
 def retrain():
 	labelled_so_far = original[:row]
 	# Save remaining unlabelled as new file to keep track
 	unlabelled = original[row:]
-	unlabelled.to_csv("/data_sets/unlabelled.csv", encoding='utf-8', index=False)
+	target = os.path.join(APP_ROOT, 'data_sets/')
+	unlabelled.to_csv(target + "unlabelled.csv", encoding='utf-8', index=False)
 
 	# Re-train model using new labels and existing data
 	frames = [data, labelled_so_far]
 	new_training_data = pd.concat(frames)
 	# Save as new latest labelled data
-	new_training_data.to_csv("/data_sets/latest.csv", encoding='utf-8', index=False)
+	new_training_data.to_csv(target + "latest.csv", encoding='utf-8', index=False)
 	# Get feature vectors for training
 	training_vectors = get_feature_vectors(new_training_data)
 	train_y = new_training_data["useful"].values
 
 	data_points = len(new_training_data.index)
 
-	train_on = (0.9*data_points)
+	train_on = int(0.9*data_points)
+
+	model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 
 	model.fit(training_vectors[:train_on], train_y[:train_on],
 			  batch_size=32,
@@ -198,6 +199,7 @@ def retrain():
 	actual_useful = np.count_nonzero(actual_y)
 	actual_spam = len(actual_y) - actual_useful
 
+
 	print("Number of spam tweets: " + str(actual_spam) + " Number of useful tweets: " + str(actual_useful))
 
 	for p in range(0, len(prediction)):
@@ -209,11 +211,15 @@ def retrain():
 			if predicted == 0:
 				spam += 1
 
+	p_acc = round((100*(correct/total)), 1)
+	p_identified_useful = round((100*(useful/actual_useful)), 1)
+	p_identified_spam = round((100*(spam/actual_spam)), 1)
+
 	print("Accuracy on test set:  " + str(correct / total))
 	print("Identified " + str(useful / actual_useful) + " of useful tweets")
 	print("Identified " + str(spam / actual_spam) + " of spam tweets")
-	return render_template('retrain.html', ac_spam=str(actual_spam), ac_useful=str(actual_useful), acc=str(correct/total),
-						   identified_useful=str(useful/actual_useful), identified_spam=str(spam/actual_spam))
+	return render_template('retrain.html', ac_spam=str(actual_spam), ac_useful=str(actual_useful), acc=str(p_acc),
+						   identified_useful=str(p_identified_useful), identified_spam=str(p_identified_spam))
 
 # Run the app
 

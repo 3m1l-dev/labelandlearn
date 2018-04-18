@@ -9,19 +9,16 @@
 
 <div class="jumbotron text-center">
     <h1>Prediction {{ prediction }}</h1>
-    <form id="positive" action="{{ url_for('positive') }}" method="POST">
-        <input class="btn btn-lg btn-outline-success my-2 my-sm-0" type="submit" value="Positive">
-
-    <form id="useless" action="{{ url_for('useless') }}" method="POST">
-        <input class="btn btn-lg btn-outline-warning my-2 my-sm-0" type="submit" value="Useless">
-    <form id="negative" action="{{ url_for('negative') }}" method="POST">
-        <input class="btn btn-lg btn-outline-danger my-2 my-sm-0" type="submit" value="Negative">
+    <form id="positive" action="{{ url_for('label') }}" method="POST">
+        <input class="btn btn-lg btn-outline-success my-2 my-sm-0" type="submit" name="submit" value="Positive">
+        <input class="btn btn-lg btn-outline-warning my-2 my-sm-0" type="submit" name="submit" value="Useless">
+        <input class="btn btn-lg btn-outline-danger my-2 my-sm-0" type="submit" name="submit" value="Negative">
     </form>
 
 </div>
 
 <div>
-    <form id="retrain" action="{{ url_for('retrain') }}" method="POST">
+    <form id="retrain" action="{{ url_for('retrain') }}" method="POST" align="center">
         <input class="btn btn-lg btn-outline-success my-2 my-sm-0" type="submit" value="Retrain">
     </form>
 </div>
