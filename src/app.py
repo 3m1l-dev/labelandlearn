@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, make_response
 import re
 from nltk.corpus import stopwords
 import pandas as pd
@@ -7,6 +7,14 @@ import numpy as np
 import nltk
 from keras.preprocessing.text import Tokenizer
 from keras.models import model_from_json
+import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
+import base64
+import urllib.parse
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+from matplotlib.figure import Figure
+from matplotlib.dates import DateFormatter
+import io
 
 nltk.download('stopwords')
 app = Flask(__name__)
@@ -48,6 +56,21 @@ def get_feature_vectors(df):
 # Row variable used to iterate over data points in dataframe
 global row
 row = 0
+
+# Correct predictions on useful and spam tweets
+global correct_useful
+global correct_spam
+
+correct_useful = 0
+correct_spam = 0
+
+# Prediction accuracies
+global acc_useful
+global acc_spam
+
+acc_useful = []
+acc_spam = []
+
 # Maximum number of words to use for feature vectors
 max_words = 10000
 
@@ -97,6 +120,7 @@ def train():
 	global original
 	# Array of predicted values for each tweet in new loaded dataframe
 	global predicted
+	global prediction
 	# Re-initialise row to 0 if a new file is loaded
 	row = 0
 
@@ -117,8 +141,17 @@ def train():
 		if round(prediction[p][0]) == 0:
 			predicted.append("0: Useless / Spam")
 
+	img = io.BytesIO()
+	plt.legend([Line2D([0], [0], color='green', marker="o", ls='-', fillstyle='none'),
+				Line2D([0], [0], color='red', marker="^", ls='-', fillstyle='none')],
+			   ['Accuracy on Useful', 'Accuracy on Spam'])
+	plt.savefig(img, format='png')
+	img.seek(0)
+	plot_url = urllib.parse.quote(base64.b64encode(img.read()).decode())
+
 	# Load the training page that displays tweet, date and prediction
-	return render_template('train.html', text=original.iloc[row]['text'], date=original.iloc[row]['date'], prediction=predicted[row])
+	return render_template('train2.html', text=original.iloc[row]['text'], date=original.iloc[row]['date'], prediction=predicted[row],
+						   plot_url = plot_url)
 
 
 # Categories: Positive, Negative, Useless
@@ -129,26 +162,74 @@ def train():
 @app.route('/label', methods=['POST'])
 def label():
 	global row
+	global correct_useful
+	global correct_spam
+	global acc_useful
+	global acc_spam
+	global prediction
+
 	# Updating the dataframe with ratings and values depending on value of submit button
 	if request.method == 'POST':
 		if request.form['submit'] == 'Positive':
 			original.at[row, 'rating'] = 1
 			original.at[row, 'useful'] = 1
 			print(original.iloc[row])
+			if round(prediction[row][0]) == 1:
+				correct_useful += 1
 			row += 1
 		if request.form['submit'] == 'Negative':
 			original.at[row, 'rating'] = -1
 			original.at[row, 'useful'] = 1
 			print(original.iloc[row])
+			if round(prediction[row][0]) == 1:
+				correct_useful += 1
 			row += 1
 		if request.form['submit'] == 'Useless':
 			original.at[row, 'rating'] = 0
 			original.at[row, 'useful'] = 0
 			print(original.iloc[row])
+			if round(prediction[row][0]) == 0:
+				correct_spam += 1
 			row += 1
+
+		# Plotting accuracies for identifying useful and spam as function of total data points labelled.
+		total_useful = original['useful'].iloc[:row].sum()
+		total_spam = row - total_useful
+		print(total_useful)
+		print(total_spam)
+		print(correct_useful)
+		print(correct_spam)
+		if total_useful == 0:
+			acc_useful.append(0)
+		else:
+			acc_useful.append(100*(correct_useful/total_useful))
+		if total_spam == 0:
+			acc_spam.append(0)
+		else:
+			acc_spam.append((100*(correct_spam/total_spam)))
+		print(acc_useful)
+		print(acc_spam)
+
+		# Use row + 1 as indexing starts from 0.
+		img = io.BytesIO()
+		x = np.arange(row)
+		#fig = plt.figure()
+		#ax = fig.add_subplot(111)
+		print(np.array(acc_useful))
+		print(np.array(acc_spam))
+		plt.plot(x, np.array(acc_useful), color='green', marker="o", ls='-', label='Accuracy on Useful', fillstyle='none')
+		plt.plot(x, np.array(acc_spam), color='red', marker="^", ls='-', label='Accuracy on Spam', fillstyle='none')
+		plt.legend([Line2D([0], [0], color='green', marker="o", ls='-', fillstyle='none'),
+					Line2D([0], [0], color='red', marker="^", ls='-', fillstyle='none')], ['Accuracy on Useful', 'Accuracy on Spam'])
+		plt.savefig(img, format='png')
+		img.seek(0)
+		plot_url = urllib.parse.quote(base64.b64encode(img.read()).decode())
+
+
 	# Returns next tweet with prediction
-	return render_template('train.html', text=original.iloc[row]['text'], date=original.iloc[row]['date'],
-						   prediction=predicted[row])
+	return render_template('train2.html', text=original.iloc[row]['text'], date=original.iloc[row]['date'],
+						   prediction=predicted[row], plot_url=plot_url, acc_useful=round((100*(correct_useful/total_useful)), 1),
+						   acc_spam=round((100*(correct_spam/total_spam)), 1))
 
 
 @app.route('/re-train', methods=['POST'])

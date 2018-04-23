@@ -18,6 +18,10 @@
 </div>
 
 <div>
+    <img src="data:image/png;base64, {{ plot_url }}">
+</div>
+
+<div>
     <form id="retrain" action="{{ url_for('retrain') }}" method="POST" align="center">
         <input class="btn btn-lg btn-outline-success my-2 my-sm-0" type="submit" value="Retrain">
     </form>

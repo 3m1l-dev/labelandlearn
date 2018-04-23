@@ -1,0 +1,76 @@
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="../../../../favicon.ico">
+
+    <title>Label and Learn</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css">
+
+  </head>
+
+  <body>
+
+
+    <main role="main">
+
+      <!-- Main jumbotron for a primary marketing message or call to action -->
+      <div class="jumbotron">
+        <div class="container">
+          <img src="https://cdn-images-1.medium.com/max/768/1*u90cJ3k-ZXvLlgWg1apBEg.png" width="15%" height="15%" alt="Smiley face" align="center">
+          <h1>{{ text }}</h1>
+          <p>{{ date }}</p>
+          <h1>Prediction {{ prediction }}</h1>
+          <form id="positive" action="{{ url_for('label') }}" method="POST">
+              <input class="btn btn-lg btn-outline-success my-2 my-sm-0" type="submit" name="submit" value="Positive">
+              <input class="btn btn-lg btn-outline-warning my-2 my-sm-0" type="submit" name="submit" value="Useless">
+              <input class="btn btn-lg btn-outline-danger my-2 my-sm-0" type="submit" name="submit" value="Negative">
+          </form>
+        </div>
+      </div>
+
+      <div class="container">
+        <!-- Example row of columns -->
+        <div class="row">
+          <div class="col-md-8 text-center">
+            <h2>Accuracy</h2>
+            <img src="data:image/png;base64, {{ plot_url }}">
+            <p>Current accuracy on identifying spam tweets: {{ acc_spam }}%</p>
+            <p>Current accuracy on identifying useful tweets: {{ acc_useful }}%</p>
+          </div>
+          <div class="col-md-4">
+            <h2>Network Architecture</h2>
+            <p>model = Sequential()</p>
+            <p>model.add(Dense(256, input_dim=max_words, kernel_initializer='normal', activation='relu'))</p>
+            <p>model.add(Dense(64, kernel_initializer='normal', activation='relu'))</p>
+            <p>model.add(Dense(1, kernel_initializer='normal', activation='sigmoid'))</p>
+            <p>model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])</p>
+            <form id="retrain" action="{{ url_for('retrain') }}" method="POST" align="center">
+                <input class="btn btn-lg btn-outline-success my-2 my-sm-0" type="submit" value="Retrain with new labels">
+            </form>
+          </div>
+        </div>
+
+        <hr>
+
+      </div> <!-- /container -->
+
+    </main>
+
+    <footer class="container">
+      <p>Eemeli Erkkola</p>
+    </footer>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script>window.jQuery || document.write('<script src="../../../../assets/js/vendor/jquery-slim.min.js"><\/script>')</script>
+    <script src="../../../../assets/js/vendor/popper.min.js"></script>
+    <script src="../../../../dist/js/bootstrap.min.js"></script>
+  </body>
+</html>
