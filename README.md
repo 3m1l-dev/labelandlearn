@@ -1,4 +1,4 @@
-# cryptotweets
+# Label and Learn
 This is a basic Flask app that I made as a part of a project to make labelling and re-training a small neural network to classify useful and useless tweets on Ethereum.
 This part I am aiming to train to recognise the most valuable tweets to use for future price predictions. Valuable tweets in this case refer to tweets where sentimental
 analysis can be performed on real (non-spam) tweets to calculate a daily overall rating for Ethereum as a cryptocurrency. I aim to use this rating in the future to plug
