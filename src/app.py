@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, request, make_response
+from flask import Flask, render_template, request
 import re
 from nltk.corpus import stopwords
 import pandas as pd
@@ -11,9 +11,6 @@ import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 import base64
 import urllib.parse
-from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
-from matplotlib.figure import Figure
-from matplotlib.dates import DateFormatter
 import io
 
 nltk.download('stopwords')
@@ -21,7 +18,7 @@ app = Flask(__name__)
 
 APP_ROOT = os.path.dirname(os.path.abspath(__file__))
 
-# Pre-processing function, with STOPWORDS imported from nltk
+# Pre-processing function, with STOPWORDS imports.pated from nltk
 STOPWORDS = set(stopwords.words('english'))
 
 
@@ -74,6 +71,9 @@ acc_spam = []
 # Maximum number of words to use for feature vectors
 max_words = 10000
 
+# Images
+images = os.path.join(APP_ROOT, 'images/')
+
 # The latest set of labelled data that the network is trained on is loaded from the main project folder
 data_sets = os.path.join(APP_ROOT, 'data_sets/')
 data = pd.read_csv(data_sets + 'latest.csv')
@@ -94,24 +94,10 @@ tknzr = Tokenizer(lower=True, split=" ", num_words=max_words)
 
 
 @app.route('/', methods=['POST', 'GET'])
-def home():
-	return render_template('home.html')
-
-
-@app.route('/train', methods=['POST'])
 def train():
-	# Uploading and saving new data sets
-	target = os.path.join(APP_ROOT, 'data_sets/')
-
-	if not os.path.isdir(target):
-		os.mkdir(target)
-
-	for file in request.files.getlist('file'):
-		# Saving file
-		filename = file.filename
-		destination = "/".join([target, filename])
-		print(destination)
-		file.save(destination)
+	# Loading latest dataset
+	source = os.path.join(APP_ROOT, 'data_sets/')
+	data_set = "/".join([source, 'unlabelled.csv'])
 
 	# Initializing global variables: dataframes, feature vectors, predictions and row iterator
 	global df
@@ -125,7 +111,7 @@ def train():
 	row = 0
 
 	# Pre-processing for predictions, loading the new file
-	load = pd.read_csv(destination)
+	load = pd.read_csv(data_set)
 	# Null values removed to avoid classifier malfunction
 	df = load[load['text'].notnull()]
 	original = df.copy()
@@ -142,15 +128,18 @@ def train():
 			predicted.append("0: Useless / Spam")
 
 	img = io.BytesIO()
-	plt.legend([Line2D([0], [0], color='green', marker="o", ls='-', fillstyle='none'),
-				Line2D([0], [0], color='red', marker="^", ls='-', fillstyle='none')],
+	plt.style.use('seaborn-whitegrid')
+	plt.xlabel('Tweets Labelled')
+	plt.ylabel('%')
+	plt.legend([Line2D([0], [0], color='green', marker="o", ls='-', fillstyle='none', linewidth=0.5),
+				Line2D([0], [0], color='red', marker="o", ls='-', fillstyle='none', linewidth=0.5)],
 			   ['Accuracy on Useful', 'Accuracy on Spam'])
 	plt.savefig(img, format='png')
 	img.seek(0)
 	plot_url = urllib.parse.quote(base64.b64encode(img.read()).decode())
 
 	# Load the training page that displays tweet, date and prediction
-	return render_template('train2.html', text=original.iloc[row]['text'], date=original.iloc[row]['date'], prediction=predicted[row],
+	return render_template('train.html', text=original.iloc[row]['text'], date=original.iloc[row]['date'], prediction=predicted[row],
 						   plot_url = plot_url)
 
 
@@ -218,16 +207,16 @@ def label():
 		print(np.array(acc_useful))
 		print(np.array(acc_spam))
 		plt.plot(x, np.array(acc_useful), color='green', marker="o", ls='-', label='Accuracy on Useful', fillstyle='none')
-		plt.plot(x, np.array(acc_spam), color='red', marker="^", ls='-', label='Accuracy on Spam', fillstyle='none')
+		plt.plot(x, np.array(acc_spam), color='red', marker="o", ls='-', label='Accuracy on Spam', fillstyle='none')
 		plt.legend([Line2D([0], [0], color='green', marker="o", ls='-', fillstyle='none'),
-					Line2D([0], [0], color='red', marker="^", ls='-', fillstyle='none')], ['Accuracy on Useful', 'Accuracy on Spam'])
+					Line2D([0], [0], color='red', marker="o", ls='-', fillstyle='none')], ['Accuracy on Useful', 'Accuracy on Spam'])
 		plt.savefig(img, format='png')
 		img.seek(0)
 		plot_url = urllib.parse.quote(base64.b64encode(img.read()).decode())
 
 
 	# Returns next tweet with prediction
-	return render_template('train2.html', text=original.iloc[row]['text'], date=original.iloc[row]['date'],
+	return render_template('train.html', text=original.iloc[row]['text'], date=original.iloc[row]['date'],
 						   prediction=predicted[row], plot_url=plot_url, acc_useful=round((100*(correct_useful/total_useful)), 1),
 						   acc_spam=round((100*(correct_spam/total_spam)), 1))
 

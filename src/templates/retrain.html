@@ -1,18 +1,52 @@
-{% extends 'layout.html' %}
 
-{% block body %}
-<div class="jumbotron text-center text-justify">
-    <h1>Model retrained!</h1>
-    <p class="lead">Number of spam tweets: {{ ac_spam }} Number of useful tweets: {{ ac_useful }}</p>
-    <p class="lead">Accuracy on test set: {{ acc }}%</p>
-    <p class="lead">Identified {{ identified_useful }}% of useful tweets.</p>
-    <p class="lead">Identified {{ identified_spam }}% of spam tweets.</p>
-    <p class="lead">Load the any unlabelled.csv to keep training.</p>
-    <form id="positive" action="{{ url_for('home') }}" method="POST" align="center">
-        <input class="btn btn-lg btn-outline-success my-2 my-sm-0" type="submit" value="Restart">
-    </form>
-</div>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="../../../../favicon.ico">
+
+    <title>Label and Learn</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css">
+
+  </head>
+
+  <body>
 
 
-{% endblock %}
+    <main role="main">
+
+      <!-- Main jumbotron for a primary marketing message or call to action -->
+      <div class="jumbotron">
+        <div class="container">
+          <img src="https://cdn-images-1.medium.com/max/768/1*u90cJ3k-ZXvLlgWg1apBEg.png" width="15%" height="15%" alt="Smiley face" align="center">
+          <h1>Model retrained!</h1>
+          <p class="lead">Number of spam tweets: {{ ac_spam }} Number of useful tweets: {{ ac_useful }}</p>
+          <p class="lead">Accuracy on test set: {{ acc }}%</p>
+          <p class="lead">Identified {{ identified_useful }}% of useful tweets.</p>
+          <p class="lead">Identified {{ identified_spam }}% of spam tweets.</p>
+          <p class="lead">Load the any unlabelled.csv to keep training.</p>
+          <form id="positive" action="{{ url_for('train') }}" method="POST" align="center">
+              <input class="btn btn-lg btn-outline-success my-2 my-sm-0" type="submit" value="Keep training">
+          </form>
+        </div>
+      </div>
+
+    </main>
+
+    <footer class="container">
+      <p>Eemeli Erkkola © 2018</p>
+    </footer>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script>window.jQuery || document.write('<script src="../../../../assets/js/vendor/jquery-slim.min.js"><\/script>')</script>
+    <script src="../../../../assets/js/vendor/popper.min.js"></script>
+    <script src="../../../../dist/js/bootstrap.min.js"></script>
+  </body>
+</html>
 
