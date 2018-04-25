@@ -1,12 +1,20 @@
-# Label and Learn
-This is a basic Flask app that I made as a part of a project to make labelling and re-training a small neural network to classify useful and useless tweets on Ethereum.
-This part I am aiming to train to recognise the most valuable tweets to use for future price predictions. Valuable tweets in this case refer to tweets where sentimental
-analysis can be performed on real (non-spam) tweets to calculate a daily overall rating for Ethereum as a cryptocurrency. I aim to use this rating in the future to plug
-in as an indicator to a recurrent neural network along with the price data that can already be fetched from another API. I will then attempt to use this to predict price
-fluctuations in the future.
+# Label and Learn: Ethereum
+Label and Learn is a simple Flask front-end intended for labelling data with the ability to retrain the algorithm using the data on the go. For this demo I have used tweets
+about Ethereum, and have trained a simple neural net to identify spam and potentially useful tweets from large data-sets of tweets on Ethereum. The purpose of this is to collect
+meaningful data for future sentiment analysis that can be used to predict Ethereum price fluctuations.
 
-I've tokenised the words, done some preprocessing, and trained a basic classifier using the the top 10,000 most common words that appear in positive and negative tweets.
-With this setup I'm getting around 96% accuracy for detecting useless tweets, and around 36% for detecting useful tweets.
+The project uses the following libraries:
+- pandas
+- numpy
+- keras
+- tensorflow
+- base64
+- urllib.parse
+
+I have used hot-encoded vectors using 10000 words as the feature of each vector. This number can be changed around, however for larger values computation is longer. 
+A simple neural net using dense layers and relu / sigmoid activations is used to predict a single output value of 0 or 1 for spam / potentially useful tweets. 
+I've tokenised the words, done some preprocessing, and trained the basic classifier using the the most common words that appear in positive and negative tweets.
+With this setup I'm getting around 96% accuracy for detecting useless tweets, and around 60% for detecting useful tweets.
 
 I've made the Flask front-end very simple, with plans to expand it in the future. However for now it serves as an easy way to label, see the predictions of the
 current classifier, and re-train when desired to update the predictions and see as the classifier improves over time. Currently I am only training one classifier

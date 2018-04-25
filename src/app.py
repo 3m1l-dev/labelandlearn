@@ -14,7 +14,7 @@ import urllib.parse
 import io
 
 nltk.download('stopwords')
-app = Flask(__name__)
+application = app = Flask(__name__)
 
 APP_ROOT = os.path.dirname(os.path.abspath(__file__))
 
@@ -202,8 +202,6 @@ def label():
 		# Use row + 1 as indexing starts from 0.
 		img = io.BytesIO()
 		x = np.arange(row)
-		#fig = plt.figure()
-		#ax = fig.add_subplot(111)
 		print(np.array(acc_useful))
 		print(np.array(acc_spam))
 		plt.plot(x, np.array(acc_useful), color='green', marker="o", ls='-', label='Accuracy on Useful', fillstyle='none')
