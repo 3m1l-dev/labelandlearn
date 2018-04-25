@@ -14,6 +14,8 @@ The project uses the following libraries:
 - base64
 - urllib.parse
 
+(you may have to pip install base64 and urllib.parse separately after installing the requirements.txt)
+
 I have used hot-encoded vectors using 10000 words as the feature of each vector. This number can be changed around, however for larger values computation is longer. 
 A simple neural net using dense layers and relu / sigmoid activations is used to predict a single output value of 0 or 1 for spam / potentially useful tweets. 
 I've tokenised the words, done some preprocessing, and trained the basic classifier using the the most common words that appear in positive and negative tweets.
