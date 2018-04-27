@@ -127,6 +127,7 @@ def train():
 		if round(prediction[p][0]) == 0:
 			predicted.append("0: Useless / Spam")
 
+	# Creating plot for accuracies, using BytesIO object to encode plot and pass to html 
 	img = io.BytesIO()
 	plt.style.use('seaborn-whitegrid')
 	plt.xlabel('Tweets Labelled')
@@ -225,13 +226,13 @@ def retrain():
 	# Save remaining unlabelled as new file to keep track
 	unlabelled = original[row:]
 	target = os.path.join(APP_ROOT, 'data_sets/')
-	unlabelled.to_csv(target + "unlabelled.csv", encoding='utf-8', index=False)
+	unlabelled.to_csv(target + "demounlabelled.csv", encoding='utf-8', index=False)
 
 	# Re-train model using new labels and existing data
 	frames = [data, labelled_so_far]
 	new_training_data = pd.concat(frames)
 	# Save as new latest labelled data
-	new_training_data.to_csv(target + "latest.csv", encoding='utf-8', index=False)
+	new_training_data.to_csv(target + "demo.csv", encoding='utf-8', index=False)
 	# Get feature vectors for training
 	training_vectors = get_feature_vectors(new_training_data)
 	train_y = new_training_data["useful"].values
@@ -250,10 +251,10 @@ def retrain():
 			  shuffle=True)
 
 	model_json = model.to_json()
-	with open('model.json', 'w') as json_file:
+	with open('demo_model.json', 'w') as json_file:
 		json_file.write(model_json)
 
-	model.save_weights('model.h5')
+	model.save_weights('demo_model.h5')
 
 	# Use completely unseen data (untrained)
 
@@ -265,7 +266,8 @@ def retrain():
 	correct = 0
 	useful = 0
 	spam = 0
-
+	global acc_useful
+	global acc_spam
 	actual_useful = np.count_nonzero(actual_y)
 	actual_spam = len(actual_y) - actual_useful
 
@@ -290,6 +292,84 @@ def retrain():
 	print("Identified " + str(spam / actual_spam) + " of spam tweets")
 	return render_template('retrain.html', ac_spam=str(actual_spam), ac_useful=str(actual_useful), acc=str(p_acc),
 						   identified_useful=str(p_identified_useful), identified_spam=str(p_identified_spam))
+
+@app.route('/demo', methods=['POST', 'GET'])
+def demo():
+	# Loading latest dataset
+	source = os.path.join(APP_ROOT, 'data_sets/')
+	data_set = "/".join([source, 'demounlabelled.csv'])
+
+	# Model structure created in neuralnetmodel.ipynb is laoded
+	json_file = open('demo_model.json', 'r')
+	loaded_model_json = json_file.read()
+	json_file.close()
+	# Create the model
+	model = model_from_json(loaded_model_json)
+	# Load the saved weights
+	model.load_weights('demo_model.h5')
+	model._make_predict_function()
+
+	# Initializing global variables: dataframes, feature vectors, predictions and row iterator
+	global df
+	global training_vectors
+	# Original copy of dataframe loaded from .csv file, used to display tweets
+	global original
+	# Array of predicted values for each tweet in new loaded dataframe
+	global predicted
+	global prediction
+	# Re-initialise row to 0 if a new file is loaded
+	global row
+	row = 0
+	# Correct predictions on useful and spam tweets
+	global correct_useful
+	global correct_spam
+
+	correct_useful = 0
+	correct_spam = 0
+
+	# Prediction accuracies
+	global acc_useful
+	global acc_spam
+
+	acc_useful = []
+	acc_spam = []
+
+	# Pre-processing for predictions, loading the new file
+	load = pd.read_csv(data_set)
+	# Null values removed to avoid classifier malfunction
+	df = load[load['text'].notnull()]
+	original = df.copy()
+
+	training_vectors = get_feature_vectors(df)
+
+	# Make predictions
+	prediction = model.predict(training_vectors)
+	predicted = []
+	for p in range(0, len(prediction)):
+		if round(prediction[p][0]) == 1:
+			predicted.append("1: Potentially Useful")
+		if round(prediction[p][0]) == 0:
+			predicted.append("0: Useless / Spam")
+
+	img = io.BytesIO()
+	plt.style.use('seaborn-whitegrid')
+	plt.xlabel('Tweets Labelled')
+	plt.ylabel('%')
+	plt.legend([Line2D([0], [0], color='green', marker="o", ls='-', fillstyle='none', linewidth=0.5),
+				Line2D([0], [0], color='red', marker="o", ls='-', fillstyle='none', linewidth=0.5)],
+			   ['Accuracy on Useful', 'Accuracy on Spam'])
+	plt.savefig(img, format='png')
+	if row == 0:
+		plt.clf()
+		plt.cla()
+		plt.close()
+		plt.savefig(img, format='png')
+	img.seek(0)
+	plot_url = urllib.parse.quote(base64.b64encode(img.read()).decode())
+
+	# Load the training page that displays tweet, date and prediction
+	return render_template('train.html', text=original.iloc[row]['text'], date=original.iloc[row]['date'], prediction=predicted[row],
+						   plot_url = plot_url)
 
 # Run the app
 
