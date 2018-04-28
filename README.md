@@ -14,17 +14,14 @@ The project uses the following libraries:
 - base64
 - urllib.parse
 
-(you may have to pip install base64 and urllib.parse separately after installing the requirements.txt)
-
-I have used hot-encoded vectors using 10000 words as the feature of each vector. This number can be changed around, however for larger values computation is longer. 
+I have used hot-encoded vectors using the 10000 most frequently appearing words in the data set. This number can be changed around, however for larger values computation is longer. 
 A simple neural net using dense layers and relu / sigmoid activations is used to predict a single output value of 0 or 1 for spam / potentially useful tweets. 
-I've tokenised the words, done some preprocessing, and trained the basic classifier using the the most common words that appear in positive and negative tweets.
-With this setup I'm getting around 96% accuracy for detecting useless tweets, and around 60% for detecting useful tweets.
+I've tokenised the words and done some pre-processing. With this setup I'm getting around 96% accuracy for detecting useless tweets, and around 60% for detecting useful tweets.
 
 I've made the Flask front-end very simple, with plans to expand it in the future. However for now it serves as an easy way to label, see the predictions of the
 current classifier, and re-train when desired to update the predictions and see as the classifier improves over time. Currently I am only training one classifier
 for detecting useful / useless tweets, however as you can see from the labels I am categorising tweets with their sentiment, as the next step after training a 
-useful tweet classifier would be to scrape as many tweets as possible and train the sentiment analysis classifier.
+useful tweet classifier would be to scrape as many non-spam tweets as possible and train the sentiment analysis classifier.
 
 There is great potential for this project however it has been taking long to develop as I have to label the data myself and I'm only working on this project
 in my own time outside of work. However this inspired me to make a useful and efficient labelling and re-training front-end, and I am focusing on that first to 
@@ -32,7 +29,7 @@ make the rest of the project easier in the future. While doing this I realised t
 be used in larger projects to spread data labelling work to anyone, as the front-end is very easy to use and requires no actual knowledge of coding.
 
 I will potentially build this into a larger more generalised labelling and learning tool, and might want to incorporate online learning with stochastic gradient descent,
-treating each tweet as a mini-batch and updating the weights live.
+treating each tweet as a mini-batch and updating the weights live. For this purpose I would like to host future versions on AWS and use an EC2 instance for model training.
 
 To run the web app, run the app.py as a python script, and open http://127.0.0.1:5000/ in your preferred web browser.
 

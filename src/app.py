@@ -127,7 +127,7 @@ def train():
 		if round(prediction[p][0]) == 0:
 			predicted.append("0: Useless / Spam")
 
-	# Creating plot for accuracies, using BytesIO object to encode plot and pass to html 
+	# Creating plot for accuracies, using BytesIO object to encode plot and pass to html
 	img = io.BytesIO()
 	plt.style.use('seaborn-whitegrid')
 	plt.xlabel('Tweets Labelled')
