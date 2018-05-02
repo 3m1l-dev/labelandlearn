@@ -11,8 +11,7 @@ The project uses the following libraries:
 - numpy
 - keras
 - tensorflow
-- base64
-- urllib.parse
+- matplotlib
 
 I have used hot-encoded vectors using the 10000 most frequently appearing words in the data set. This number can be changed around, however for larger values computation is longer. 
 A simple neural net using dense layers and relu / sigmoid activations is used to predict a single output value of 0 or 1 for spam / potentially useful tweets. 
