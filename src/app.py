@@ -1,27 +1,29 @@
 import os
-from flask import Flask, render_template, request
 import re
-from nltk.corpus import stopwords
-import pandas as pd
-import numpy as np
-import nltk
-from keras.preprocessing.text import Tokenizer
-from keras.models import model_from_json
-import matplotlib.pyplot as plt
-from matplotlib.lines import Line2D
 import base64
 import urllib.parse
 import io
 
+from flask import Flask, render_template, request
+import nltk
+from nltk.corpus import stopwords
+import pandas as pd
+import numpy as np
+from keras.preprocessing.text import Tokenizer
+from keras.models import model_from_json
+import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
+
 nltk.download('stopwords')
-application = app = Flask(__name__)
+APPLICATION = APP = Flask(__name__)
 
 APP_ROOT = os.path.dirname(os.path.abspath(__file__))
 
 # Pre-processing function, with STOPWORDS imports.pated from nltk
 STOPWORDS = set(stopwords.words('english'))
 
-# Load labelled data, model, variables
+# Load labelled data, model, variables, initialize global dataframe
+ORIGINAL = pd.DataFrame()
 
 # Row variable used to iterate over data points in dataframe
 ROW = 0
@@ -87,11 +89,10 @@ def get_feature_vectors(data_frame):
     return training_vectors
 
 
-@app.route('/', methods=['POST', 'GET'])
+@APP.route('/', methods=['POST', 'GET'])
 def train():
-    # Set global variables
 
-    global original
+    global ORIGINAL
     global ROW
     global prediction
     global predicted
@@ -107,8 +108,7 @@ def train():
     load = pd.read_csv(data_set)
     # Null values removed to avoid classifier malfunction
     df = load[load['text'].notnull()]
-    
-    original = df.copy()
+    ORIGINAL = df.copy()
 
     training_vectors = get_feature_vectors(df)
 
@@ -151,19 +151,19 @@ def train():
     # Load the training page that displays tweet, date and prediction
     return render_template(
         'train.html',
-        text=original.iloc[ROW]['text'],
-        date=original.iloc[ROW]['date'],
+        text=ORIGINAL.iloc[ROW]['text'],
+        date=ORIGINAL.iloc[ROW]['date'],
         prediction=predicted[ROW],
         plot_url=plot_url)
 
 
 # Categories: Positive, Negative, Useless
 
-# Both positive and negative tweets are useful, the reason they are differentiated at this point is to be used for
-# sentiment analysis later on when I have finished collecting and
-# labelling enough data.
+# Both positive and negative tweets are useful, the reason they are differentiated
+# at this point is to be used for sentiment analysis later on when I have finished
+# collecting and labelling enough data.
 
-@app.route('/label', methods=['POST'])
+@APP.route('/label', methods=['POST'])
 def label():
     # Updating the dataframe with ratings and values depending on value of
     # submit button
@@ -174,30 +174,30 @@ def label():
     global ACC_SPAM
     if request.method == 'POST':
         if request.form['submit'] == 'Positive':
-            original.at[ROW, 'rating'] = 1
-            original.at[ROW, 'useful'] = 1
-            print(original.iloc[ROW])
+            ORIGINAL.at[ROW, 'rating'] = 1
+            ORIGINAL.at[ROW, 'useful'] = 1
+            print(ORIGINAL.iloc[ROW])
             if round(prediction[ROW][0]) == 1:
                 CORRECT_USEFUL += 1
             ROW += 1
         if request.form['submit'] == 'Negative':
-            original.at[ROW, 'rating'] = -1
-            original.at[ROW, 'useful'] = 1
-            print(original.iloc[ROW])
+            ORIGINAL.at[ROW, 'rating'] = -1
+            ORIGINAL.at[ROW, 'useful'] = 1
+            print(ORIGINAL.iloc[ROW])
             if round(prediction[ROW][0]) == 1:
                 CORRECT_USEFUL += 1
             ROW += 1
         if request.form['submit'] == 'Useless':
-            original.at[ROW, 'rating'] = 0
-            original.at[ROW, 'useful'] = 0
-            print(original.iloc[ROW])
+            ORIGINAL.at[ROW, 'rating'] = 0
+            ORIGINAL.at[ROW, 'useful'] = 0
+            print(ORIGINAL.iloc[ROW])
             if round(prediction[ROW][0]) == 0:
                 CORRECT_SPAM += 1
             ROW += 1
 
         # Plotting accuracies for identifying useful and spam as function of
         # total data points labelled.
-        total_useful = original['useful'].iloc[:ROW].sum()
+        total_useful = ORIGINAL['useful'].iloc[:ROW].sum()
         total_spam = ROW - total_useful
         print(total_useful)
         print(total_spam)
@@ -255,8 +255,8 @@ def label():
 
     # Returns next tweet with prediction
     return render_template('train.html',
-                           text=original.iloc[ROW]['text'],
-                           date=original.iloc[ROW]['date'],
+                           text=ORIGINAL.iloc[ROW]['text'],
+                           date=ORIGINAL.iloc[ROW]['date'],
                            prediction=predicted[ROW],
                            plot_url=plot_url,
                            acc_useful=round((100 * (CORRECT_USEFUL / total_useful)),
@@ -265,7 +265,7 @@ def label():
                                           1))
 
 
-@app.route('/re-train', methods=['POST'])
+@APP.route('/re-train', methods=['POST'])
 def retrain():
 
     global ROW
@@ -274,9 +274,9 @@ def retrain():
     global ACC_USEFUL
     global ACC_SPAM
 
-    labelled_so_far = original[:ROW]
+    labelled_so_far = ORIGINAL[:ROW]
     # Save remaining unlabelled as new file to keep track
-    unlabelled = original[ROW:]
+    unlabelled = ORIGINAL[ROW:]
     target = os.path.join(APP_ROOT, 'data_sets/')
     unlabelled.to_csv(
         target +
@@ -337,9 +337,9 @@ def retrain():
         " Number of useful tweets: " +
         str(actual_useful))
 
-    for p in range(0, len(prediction)):
-        predicted = round(prediction[p][0])
-        if predicted == actual_y[p]:
+    for p in enumerate(prediction):
+        predicted = round(prediction[p[0]][0])
+        if predicted == actual_y[p[0]]:
             correct += 1
             if predicted == 1:
                 useful += 1
@@ -362,87 +362,8 @@ def retrain():
         identified_spam=str(p_identified_spam))
 
 
-@app.route('/demo', methods=['POST', 'GET'])
-def demo():
-    # Loading latest dataset
-    source = os.path.join(APP_ROOT, 'data_sets/')
-    data_set = "/".join([source, 'demounlabelled.csv'])
-
-    # Model structure created in neuralnetmodel.ipynb is laoded
-    json_file = open('demo_model.json', 'r')
-    loaded_model_json = json_file.read()
-    json_file.close()
-    # Create the model
-    model = model_from_json(loaded_model_json)
-    # Load the saved weights
-    model.load_weights('demo_model.h5')
-    model._make_predict_function()
-
-    row = 0
-    # Correct predictions on useful and spam tweets
-    correct_useful = 0
-    correct_spam = 0
-
-
-    acc_useful = []
-    acc_spam = []
-
-    # Pre-processing for predictions, loading the new file
-    load = pd.read_csv(data_set)
-    # Null values removed to avoid classifier malfunction
-    df = load[load['text'].notnull()]
-    original = df.copy()
-
-    training_vectors = get_feature_vectors(df)
-
-    # Make predictions
-    prediction = model.predict(training_vectors)
-    predicted = []
-    for p in range(0, len(prediction)):
-        if round(prediction[p][0]) == 1:
-            predicted.append("1: Potentially Useful")
-        if round(prediction[p][0]) == 0:
-            predicted.append("0: Useless / Spam")
-
-    img = io.BytesIO()
-    plt.style.use('seaborn-whitegrid')
-    plt.xlabel('Tweets Labelled')
-    plt.ylabel('%')
-    plt.legend([Line2D([0],
-                       [0],
-                       color='green',
-                       marker="o",
-                       ls='-',
-                       fillstyle='none',
-                       linewidth=0.5),
-                Line2D([0],
-                       [0],
-                       color='red',
-                       marker="o",
-                       ls='-',
-                       fillstyle='none',
-                       linewidth=0.5)],
-               ['Accuracy on Useful',
-                'Accuracy on Spam'])
-    plt.savefig(img, format='png')
-    if ROW == 0:
-        plt.clf()
-        plt.cla()
-        plt.close()
-        plt.savefig(img, format='png')
-    img.seek(0)
-    plot_url = urllib.parse.quote(base64.b64encode(img.read()).decode())
-
-    # Load the training page that displays tweet, date and prediction
-    return render_template(
-        'train.html',
-        text=original.iloc[ROW]['text'],
-        date=original.iloc[ROW]['date'],
-        prediction=predicted[ROW],
-        plot_url=plot_url)
-
 # Run the app
 
 
 if __name__ == '__main__':
-    app.run()
+    APP.run()
