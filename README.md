@@ -2,6 +2,8 @@
 
 ![Screen-shot](screen-shot.png)
 
+<div style="text-align: justify">
+
 Label and Learn is a simple Flask front-end intended for labelling data with the ability to retrain the algorithm using the data on the go. For this demo I have used tweets about Ethereum, and have trained a simple neural net to identify spam and potentially useful tweets from large data-sets of tweets on Ethereum. The purpose of this is to collect meaningful data for future sentiment analysis that can be used to predict Ethereum price fluctuations.
 
 The project uses the following libraries:
@@ -20,4 +22,6 @@ Setting up a training set takes long as I had to label the data myself and this 
 I will potentially build this into a larger more generalised labelling and learning tool, and might want to incorporate online learning with stochastic gradient descent, treating each tweet as a mini-batch and updating the weights live. For this purpose I would like to host future versions on AWS using elastic beanstalk to run this as an actual webapp. 
 
 To run the web app, run the app.py as a python script, and open http://127.0.0.1:5000/ in your preferred web browser.
+
+</div>
 
