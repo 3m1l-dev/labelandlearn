@@ -2,7 +2,7 @@
 
 ![Screen-shot](screen-shot.png)
 
-<div style="text-align: justify">
+<div align="justify">
 
 Label and Learn is a simple Flask front-end intended for labelling data with the ability to retrain the algorithm using the data on the go. For this demo I have used tweets about Ethereum, and have trained a simple neural net to identify spam and potentially useful tweets from large data-sets of tweets on Ethereum. The purpose of this is to collect meaningful data for future sentiment analysis that can be used to predict Ethereum price fluctuations.
 
