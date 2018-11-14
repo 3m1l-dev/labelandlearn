@@ -1,17 +1,18 @@
 import os
 import re
+import io
+import nltk
 import base64
 import urllib.parse
-import io
 
-from flask import Flask, render_template, request
-import nltk
-from nltk.corpus import stopwords
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
+
+from flask import Flask, render_template, request
+from nltk.corpus import stopwords
 from keras.preprocessing.text import Tokenizer
 from keras.models import model_from_json
-import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 
 nltk.download('stopwords')
